@@ -36,13 +36,6 @@ DallasTemperature sensor_two(&oneWire_two);
 // set global sensor resolution to 9, 10, 11, or 12 bits
 const int8_t resolution = 12;
 
-void error(char *str)
-{
-  DPRINT("error: ");
-  DPRINTLN(str);
-  while (1);
-}
-
 void setup() {
   Serial.begin(115200);
   while (!Serial) delay(10);
