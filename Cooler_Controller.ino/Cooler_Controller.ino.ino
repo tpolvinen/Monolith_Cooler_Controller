@@ -4,28 +4,25 @@
 //#define DEBUG
 #include <DebugMacros.h>
 #include <Wire.h>
+#include <Encoder.h>
 #include <OneWire.h> // https://github.com/PaulStoffregen/OneWire
 #include <DallasTemperature.h> // https://github.com/milesburton/Arduino-Temperature-Control-Library
 #include <avr/wdt.h>
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
 
-const int8_t potPin = CONTROLLINO_A6;
-const int8_t rs = CONTROLLINO_D13,
-             en = CONTROLLINO_D12,
-             d4 = CONTROLLINO_D11,
-             d5 = CONTROLLINO_D10,
-             d6 = CONTROLLINO_D9,
-             d7 = CONTROLLINO_D8;
+Encoder myEnc(CONTROLLINO_IN0, CONTROLLINO_IN1);
+int32_t encoderValue = 0;
+int32_t oldEncoderValue = -999;
 
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+LiquidCrystal_I2C lcd(0x27,20,4);
 
 const int16_t sensorReadingIntervalSeconds = 10;
 const int16_t numberOfSensorReadingsPerMeasurement = 10;
 
-#define ONE_WIRE_BUS6   CONTROLLINO_D6
-#define ONE_WIRE_BUS7   CONTROLLINO_D7
-OneWire oneWire_one(ONE_WIRE_BUS6);
-OneWire oneWire_two(ONE_WIRE_BUS7);
+#define ONE_WIRE_BUS0   CONTROLLINO_D0
+#define ONE_WIRE_BUS1   CONTROLLINO_D1
+OneWire oneWire_one(ONE_WIRE_BUS0);
+OneWire oneWire_two(ONE_WIRE_BUS1);
 DallasTemperature sensor_one(&oneWire_one);
 DallasTemperature sensor_two(&oneWire_two);
 
@@ -45,8 +42,10 @@ void setup() {
 
   Wire.begin();
 
-  lcd.begin(20, 4);
-  lcd.print("hello, world!");
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(3,0);
+  lcd.print("Hello, world!");
 
   int countdownMS = Watchdog.enable(4000);
   Watchdog.reset();
@@ -60,10 +59,8 @@ void setup() {
   DPRINTLN(" ms");
   DPRINTLN("------------------------------------------------------------");
   DPRINTLN();
-
-  int8_t setupPotValue = analogRead(potPin);
-  DPRINT("Checking pot value: ");
-  DPRINTLN(setupPotValue);
+  DPRINT("Reading rotary encoder, value: ");
+  DPRINTLN(encoderValue = myEnc.read());
 
   float temperature;
   sensor_one.begin();
@@ -82,18 +79,17 @@ void setup() {
   DPRINT(sensor_two.getTempCByIndex(0));
   DPRINTLN(" ...Done.");
 
-
-
-  //int16_t setupSensorReadings[numberOfSensorReadingsPerMeasurement];
-
-
 }
 
 void loop() {
 
   Watchdog.reset();
-  int16_t potValue = analogRead(potPin);
-  Serial.println(potValue);
+
+  encoderValue = myEnc.read();
+  if (encoderValue != oldEncoderValue) {
+    oldEncoderValue = encoderValue;
+  }
+  Serial.println(encoderValue);
   
   int16_t sensorReadings[numberOfSensorReadingsPerMeasurement];
   const unsigned long sensorReadingIntervalMilliseconds = sensorReadingIntervalSeconds * 1000;
