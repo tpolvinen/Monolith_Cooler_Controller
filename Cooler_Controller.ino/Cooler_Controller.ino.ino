@@ -12,7 +12,8 @@
 #include <LiquidCrystal_I2C.h>
 
 int16_t eepromAddr = 0;
-int16_t setTemp = 0;
+int16_t setTempC;
+byte setTempByte;
 float temperature1;
 float temperature2;
 
@@ -22,7 +23,7 @@ uint32_t encoderSwitchLowMs;
 uint32_t showEepromStoreSign;
 
 Encoder myEnc(CONTROLLINO_IN0, CONTROLLINO_IN1);
-int32_t encoderValue = 0;
+int32_t encoderValue;
 //int32_t oldEncoderValue = -999;
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
@@ -60,17 +61,14 @@ void setup() {
   int16_t countdownMS = Watchdog.enable(4000);
   Watchdog.reset();
 
-  setTemp = EEPROM.read(eepromAddr);
-
-  if (setTemp > 40) {
-    setTemp -= 256;
-  }
+  setTempByte = EEPROM.read(eepromAddr);
+  setTempC = setTempByte - 127;
 
   lcd.setCursor(3, 0);
   lcd.print("             ");
   lcd.setCursor(3, 0);
   lcd.print("Set Temp: ");
-  lcd.print(setTemp);
+  lcd.print(setTempC);
   lcd.setCursor(3, 2);
   lcd.print("Dial: ");
 
@@ -83,13 +81,10 @@ void setup() {
   DPRINTLN(" ms");
   DPRINTLN();
   DPRINT("Set Temp: ");
-  DPRINTLN(setTemp);
+  DPRINTLN(setTempC);
   DPRINTLN("------------------------------------------------------------");
   DPRINTLN();
-  //  DPRINT("Reading rotary encoder, value: ");
-  //  DPRINTLN(encoderValue = myEnc.read());
 
-  float temperature;
   sensor_one.begin();
   sensor_two.begin();
   Watchdog.reset();
@@ -100,18 +95,16 @@ void setup() {
   lcd.print("T1: ");
   temperature1 = sensor_one.getTempCByIndex(0);
   lcd.print(temperature1);
-  DPRINT("Initializing sensor_one... temperature: ");
-  DPRINT(temperature1);
-  DPRINTLN(" ...Done.");
+  DPRINT("Initializing sensor_one. Temperature: ");
+  DPRINTLN(temperature1);
 
   sensor_two.setResolution(resolution);
   sensor_two.requestTemperatures();
   lcd.print(" T2: ");
   temperature2 = sensor_two.getTempCByIndex(0);
-  lcd.print(temperature1);
-  DPRINT("Initializing sensor_two... temperature: ");
-  DPRINT(temperature2);
-  DPRINTLN(" ...Done.");
+  lcd.print(temperature2);
+  DPRINT("Initializing sensor_two. Temperature: ");
+  DPRINTLN(temperature2);
 
 }
 
@@ -137,7 +130,7 @@ void loop() {
   lcd.print(temperature2);
 
 
-  if (temperature1 > setTemp) {
+  if (temperature1 > setTempC) {
     digitalWrite(COOLANT_FLOW_VALVE, HIGH);
     digitalWrite(FAN_RELAY, HIGH);
   } else {
@@ -155,29 +148,30 @@ void loop() {
       // ignoring debounce
     }
     else {
-      if (encoderValue < -20) {
-        setTemp = -20;
-      } else if (encoderValue > 40) {
-        setTemp = 40;
+      if (encoderValue < -127) {
+        setTempC = -127;
+      } else if (encoderValue > 128) {
+        setTempC = 128;
       } else {
-        setTemp = encoderValue;
+        setTempC = encoderValue;
       }
-      EEPROM.write(eepromAddr, setTemp);
+      byte setTempByte = setTempC + 127;
+      EEPROM.write(eepromAddr, setTempByte);
       lcd.setCursor(0, 3);
       lcd.print("Set Temp: ");
-      lcd.print(setTemp);
+      lcd.print(setTempC);
       showEepromStoreSign = millis();
     }
   }
 
-  if (millis() - showEepromStoreSign > 5000) {
+  if (millis() - showEepromStoreSign > 3000) {
     lcd.setCursor(0, 3);
     lcd.print("                    ");
     lcd.setCursor(0, 0);
     lcd.print("                    ");
     lcd.setCursor(3, 0);
     lcd.print("Set Temp: ");
-    lcd.print(setTemp);
+    lcd.print(setTempC);
   }
 
 
