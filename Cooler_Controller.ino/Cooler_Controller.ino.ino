@@ -185,3 +185,38 @@ void loop() {
 
 
 }
+
+// NOTES
+
+//  TODO:
+//    interval for turning fan off
+//    interval for switching coolant valve
+//
+//  sensorReadinInterval (bool)
+//  coolantValve_state (bool)
+//  fan_state (bool)
+//  dial_state (int16_t) ?
+//  
+
+// VARIABLES
+//
+//  uint32_t sensorReadingInterval;
+//  int16_t eepromAddr = 0;
+//  int16_t setTemp = 0;
+//  float temperature1;
+//  float temperature2;
+//  int8_t encoderSwitchPin = CONTROLLINO_D2;
+//  int8_t encoderSwitchState = HIGH;
+//  uint32_t encoderSwitchLowMs;
+//  uint32_t showEepromStoreSign;
+//  int32_t encoderValue;
+//  uint32_t fanOffDelayMs = 20*60*1000;
+//   
+
+// as soon as possible, read encoderValue, if changed, (multiply by 2?), rewrite dial number on display
+// as soon as possible, check encoder switch, debounce, set setTemp, write to eeprom
+// every one second, rewrite temperatures on display (set temp, T1, T2)
+// every 5 minutes, change coolant valve state, unless set temp - T1 > 1C
+// when coolant valve turns to long cycle (cooling), turn on fan
+// after turning valve to short cycle (not cooling), keep fan going on 20 minutes?
+// 
