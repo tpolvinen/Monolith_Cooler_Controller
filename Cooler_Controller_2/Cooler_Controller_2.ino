@@ -52,8 +52,8 @@ DallasTemperature sensor_two(&oneWire_two);
 const int8_t resolution = 12;
 
 void setup() {
-  Serial.begin(115200);
-  while (!Serial) delay(10);
+//  Serial.begin(115200);
+//  while (!Serial) delay(10);
   pinMode(encoderSwitchPin, INPUT_PULLUP);
   pinMode(COOLANT_FLOW_VALVE, OUTPUT);
   pinMode(FAN_RELAY, OUTPUT);
@@ -168,7 +168,7 @@ void loop() {
     temperature1 = sensor_one.getTempCByIndex(0);
     if (temperature1 != previousTemperature1) {
       lcd.setCursor(3, 0);
-      lcd.print("      ");
+      lcd.print("       ");
       lcd.setCursor(3, 0);
       lcd.print(temperature1);
       previousTemperature1 = temperature1;
@@ -177,7 +177,7 @@ void loop() {
     temperature2 = sensor_two.getTempCByIndex(0);
     if (temperature2 != previousTemperature2) {
       lcd.setCursor(13, 0);
-      lcd.print("      ");
+      lcd.print("       ");
       lcd.setCursor(13, 0);
       lcd.print(temperature2);
       previousTemperature2 = temperature2;
