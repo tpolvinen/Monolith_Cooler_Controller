@@ -74,8 +74,17 @@ void setup() {
 
   Watchdog.reset();
 
-  encoderValue = myEnc.read() / 2;
   lcd.setCursor(0, 0);
+  lcd.print("T1:       T2:");
+  lcd.setCursor(0, 1);
+  lcd.print("T1 AIM:");
+  lcd.setCursor(0, 2);
+  lcd.print("VALVE:");
+  lcd.setCursor(0, 3);
+  lcd.print("FAN:OFF  T NEW:");
+
+  encoderValue = myEnc.read() / 2;
+  lcd.setCursor(15, 3);
   lcd.print(encoderValue);
   previousEncoderValue = encoderValue;
 
@@ -84,37 +93,46 @@ void setup() {
 
   sensor_one.requestTemperatures();
   temperature1 = sensor_one.getTempCByIndex(0);
-  lcd.setCursor(0, 1);
+  lcd.setCursor(3, 0);
   lcd.print(temperature1);
   previousTemperature1 = temperature1;
 
   sensor_two.requestTemperatures();
   temperature2 = sensor_two.getTempCByIndex(0);
-  lcd.setCursor(9, 1);
+  lcd.setCursor(13, 0);
   lcd.print(temperature2);
   previousTemperature2 = temperature2;
 
   nextSensorReadingMs = millis() + sensorReadingInterval;
 
-  lcd.setCursor(0, 3);
+  lcd.setCursor(7, 1);
   lcd.print(setTempC);
 
   if (temperature1 > setTempC) {
     digitalWrite(COOLANT_FLOW_VALVE, HIGH);
+    lcd.setCursor(6, 2);
+    lcd.print("ON ");
     digitalWrite(FAN_RELAY, HIGH);
+    lcd.setCursor(4, 3);
+    lcd.print("ON ");
   } else {
     digitalWrite(COOLANT_FLOW_VALVE, LOW);
+    lcd.setCursor(6, 2);
+    lcd.print("OFF");
     digitalWrite(FAN_RELAY, LOW);
+    lcd.setCursor(4, 3);
+    lcd.print("OFF");
   }
+
 }
 
 void loop() {
   Watchdog.reset();
   encoderValue = myEnc.read() / 2;
   if (encoderValue != previousEncoderValue) {
-    lcd.setCursor(0, 0);
-    lcd.print("       ");
-    lcd.setCursor(0, 0);
+    lcd.setCursor(15, 3);
+    lcd.print("     ");
+    lcd.setCursor(15, 3);
     lcd.print(encoderValue);
     previousEncoderValue = encoderValue;
   }
@@ -137,9 +155,9 @@ void loop() {
       }
       byte setTempByte = setTempC + 127;
       EEPROM.write(eepromAddr, setTempByte);
-      lcd.setCursor(0, 3);
-      lcd.print("      ");
-      lcd.setCursor(0, 3);
+      lcd.setCursor(7, 1);
+      lcd.print("     ");
+      lcd.setCursor(7, 1);
       lcd.print(setTempC);
     }
   }
@@ -149,22 +167,18 @@ void loop() {
     sensor_one.requestTemperatures();
     temperature1 = sensor_one.getTempCByIndex(0);
     if (temperature1 != previousTemperature1) {
-      lcd.setCursor(0, 1);
-      for (int8_t i = 0; i < 5; i++) {
-        lcd.print(" ");
-      }
-      lcd.setCursor(0, 1);
+      lcd.setCursor(3, 0);
+      lcd.print("      ");
+      lcd.setCursor(3, 0);
       lcd.print(temperature1);
       previousTemperature1 = temperature1;
     }
     sensor_two.requestTemperatures();
     temperature2 = sensor_two.getTempCByIndex(0);
     if (temperature2 != previousTemperature2) {
-      lcd.setCursor(9, 1);
-      for (int8_t i = 0; i < 5; i++) {
-        lcd.print(" ");
-      }
-      lcd.setCursor(9, 1);
+      lcd.setCursor(13, 0);
+      lcd.print("      ");
+      lcd.setCursor(13, 0);
       lcd.print(temperature2);
       previousTemperature2 = temperature2;
     }
@@ -174,12 +188,20 @@ void loop() {
   if (millis() >= nextControlChangeMs) {
     if (temperature1 > setTempC) {
       digitalWrite(COOLANT_FLOW_VALVE, HIGH);
+      lcd.setCursor(6, 2);
+      lcd.print("ON ");
       digitalWrite(FAN_RELAY, HIGH);
+      lcd.setCursor(4, 3);
+      lcd.print("ON ");
       fanShutOffMs = millis() + fanShutOffDelay;
     } else {
       digitalWrite(COOLANT_FLOW_VALVE, LOW);
+      lcd.setCursor(6, 2);
+      lcd.print("OFF");
       if (millis() >= fanShutOffMs) {
         digitalWrite(FAN_RELAY, LOW);
+        lcd.setCursor(4, 3);
+        lcd.print("OFF");
       }
     }
     nextControlChangeMs = millis() + controlChangeInterval;
